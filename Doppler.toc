@@ -1,0 +1,11 @@
+## Interface: 73500
+## Version: 0.1
+## Title: Doppler
+## Author: Prosper
+## SavedVariables: DopplerDB
+## OptionalDeps: Ace3
+## X-Embeds: Ace3
+
+embeds.xml
+
+core.lua
