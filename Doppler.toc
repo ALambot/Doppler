@@ -6,6 +6,4 @@
 ## OptionalDeps: Ace3
 ## X-Embeds: Ace3
 
-embeds.xml
-
-core.lua
+Doppler.xml

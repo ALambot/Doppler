@@ -1,26 +1,48 @@
+--[[
+
+    Structure of a dop :
+        - ID        : unique identifier
+        - command   : command or text to run/print at a given interval
+        - delay     : the given interval
+        - running   : true if the dop is running, false if stopped
+        - exist     : false if the dop has been deleted
+        - current   : a timer, when it reaches the "delay" value it the "command" will be run
+        - frame     : reference to the UI frame of that dop
+
+  ]]
+
 Doppler = LibStub("AceAddon-3.0"):NewAddon("Doppler")
 GUI = LibStub("AceGUI-3.0")
 
 
 function Doppler:OnInitialize()
     -- Called when the addon is loaded
-    Doppler.dops = {}
-    Doppler.InitGUI()
-    Doppler.InitTick()
+    Doppler.dopHolder = {}
+    Doppler.dopHolder["count"] = 0
+    Doppler.dopHolder["dops"] = {}
 end
 
 function Doppler:OnEnable()
     -- Called when the addon is enabled
+    Doppler.InitGUI()
+    Doppler.InitTick()
 end
 
 function Doppler:OnDisable()
     -- Called when the addon is disabled
 end
 
-function Doppler:CreateDop(command , delay)
+-----
+
+function Doppler:CreateDop(command, delay)
+
     local dop = {}
     dop["command"] = command
     dop["delay"] = delay
+
+    dop["current"] = 0
+    dop["running"] = false
+    dop["exist"] = true
 
     local gui = GUI.mainScroll
 
@@ -37,6 +59,21 @@ function Doppler:CreateDop(command , delay)
     return dop
 end
 
+function Doppler:AddDop(dop)
+    local dH = Doppler.dopHolder
+    local dops = dH["dops"]
+    dop["ID"] = dh["count"]
+    dops[dH["count"]] = dop
+    dH["count"] = dh["count"] + 1
+end
+
+function Doppler:RemoveDop(dop)
+    dop["exist"] == false
+    dop["running"] == false
+    -- hide frame
+end
+
+-----
 
 function Doppler.InitTick()
     Doppler.TICK_PERIOD = 3
@@ -51,14 +88,27 @@ function Doppler.OnUpdate(self, elapsed)
     self.elapsed = self.elapsed+elapsed
     Doppler.tickCounter = Doppler.tickCounter + elapsed
     if Doppler.tickCounter > Doppler.TICK_PERIOD then
-       Doppler.UpdateTick(self.elapsed)
+       Doppler.UpdateTick(elapsed)
        Doppler.tickCounter = Doppler.tickCounter % Doppler.TICK_PERIOD
     end
 end
 
-function Doppler.UpdateTick(curTime)
-    print(curTime)
+function Doppler.UpdateTick(elapsed)
+    local dH = Doppler.dopHolder
+    local dops = dh["dops"]
+    for i = 0,dh["count"]-1,1 do
+        local dop = dops[i]
+        if dop["exist"] and dop["running"] then
+            dop["current"] = dop["current"] + elapsed
+            if dop["current"] > dop["delay"] then
+                SendChatMessage(dop["command"],"GUILD")
+                dop["current"] = dop["current"]%dop["delay"]
+            end
+        end
+    end
 end
+
+-----
 
 function Doppler.InitGUI()
 
@@ -79,47 +129,3 @@ function Doppler.InitGUI()
     GUI.mainScroll:AddChild(GUI.but)
 
 end
-
---[[
-AceTest = LibStub("AceAddon-3.0"):NewAddon("AceTest", "AceConsole-3.0")
-GUI = LibStub("AceGUI-3.0")
-
-function AceTest:OnInitialize()
-    -- Called when the addon is loaded
-end
-
-function AceTest:OnEnable()
-    -- Called when the addon is enabled
-end
-
-function AceTest:OnDisable()
-    -- Called when the addon is disabled
-end
-
--- Create a container frame
-local f = GUI:Create("Frame")
-f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
-f:SetTitle("Prosper Mk22")
---f:SetStatusText("Status Bar")
-f:SetLayout("Fill")
-
-local g = GUI:Create("SimpleGroup")
-g:SetLayout("Fill")
-f:AddChild(g)
-
-scroll = GUI:Create("ScrollFrame")
-scroll:SetLayout("Flow")
-g:AddChild(scroll)
-
-local btn = GUI:Create("Button")
-btn:SetWidth(170)
-btn:SetText("Button !")
-btn:SetCallback("OnClick", function() print("Click!") end)
-scroll:AddChild(btn)
-
-local btn1 = GUI:Create("Button")
-btn1:SetWidth(170)
-btn1:SetText("Button !1")
-btn1:SetCallback("OnClick", function() print("Click!1") end)
-scroll:AddChild(btn1)
-]]
