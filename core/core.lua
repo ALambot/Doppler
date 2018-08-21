@@ -14,6 +14,7 @@
 Doppler = LibStub("AceAddon-3.0"):NewAddon("Doppler")
 GUI = LibStub("AceGUI-3.0")
 
+print("HELLO")
 
 function Doppler:OnInitialize()
     -- Called when the addon is loaded
@@ -44,15 +45,28 @@ function Doppler:CreateDop(command, delay)
     dop["running"] = false
     dop["exist"] = true
 
-    local gui = GUI.mainScroll
+
+    local Group = GUI:Create("InlineGroup")
+    Group:SetFullWidth(true)
+    Group:SetLayout("Flow")
 
     local labelCmd = GUI:Create("Label")
     labelCmd:SetText(command)
+    labelCmd:SetRelativeWidth(0.5)
     local labelDelay = GUI:Create("Label")
     labelDelay:SetText(delay)
+    labelCmd:SetRelativeWidth(0.2)
+    local buttonRun = GUI:Create("Button")
+    buttonRun:SetRelativeWidth(0.14)
+    local buttonDel = GUI:Create("Button")
+    buttonDel:SetRelativeWidth(0.14)
 
-    gui:AddChild(labelCmd)
-    gui:AddChild(labelDelay)
+    Group:AddChild(labelCmd)
+    Group:AddChild(labelDelay)
+    Group:AddChild(buttonRun)
+    Group:AddChild(buttonDel)
+
+    GUI.Scroll:AddChild(Group)
 
     dop["frame"] = gui
 
@@ -62,14 +76,14 @@ end
 function Doppler:AddDop(dop)
     local dH = Doppler.dopHolder
     local dops = dH["dops"]
-    dop["ID"] = dh["count"]
+    dop["ID"] = dH["count"]
     dops[dH["count"]] = dop
-    dH["count"] = dh["count"] + 1
+    dH["count"] = dH["count"] + 1
 end
 
 function Doppler:RemoveDop(dop)
-    dop["exist"] == false
-    dop["running"] == false
+    dop["exist"] = false
+    dop["running"] = false
     -- hide frame
 end
 
@@ -94,9 +108,10 @@ function Doppler.OnUpdate(self, elapsed)
 end
 
 function Doppler.UpdateTick(elapsed)
+    print("TICK")
     local dH = Doppler.dopHolder
-    local dops = dh["dops"]
-    for i = 0,dh["count"]-1,1 do
+    local dops = dH["dops"]
+    for i = 0,dH["count"]-1,1 do
         local dop = dops[i]
         if dop["exist"] and dop["running"] then
             dop["current"] = dop["current"] + elapsed
@@ -112,20 +127,48 @@ end
 
 function Doppler.InitGUI()
 
-    GUI.mainFrame = GUI:Create("Frame")
+    GUI.mainFrame = GUI:Create("MainFrame")
     GUI.mainFrame:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
     GUI.mainFrame:SetTitle("Doppler")
     GUI.mainFrame:SetLayout("Flow")
     GUI.mainFrame:SetWidth(200)
     GUI.mainFrame:SetHeight(500)
 
-    GUI.mainScroll = GUI:Create("ScrollFrame")
-    GUI.mainScroll:SetFullHeight(true)
-    GUI.mainScroll:SetLayout("Flow")
-    GUI.mainFrame:AddChild(GUI.mainScroll)
+    GUI.Header = GUI:Create("InlineGroup")
+    GUI.Header:SetFullWidth(true)
+    GUI.Header:SetLayout("Flow")
 
-    GUI.but = GUI:Create("Button")
-    GUI.but:SetCallback("OnClick", function() Doppler:CreateDop("kek","keke") end)
-    GUI.mainScroll:AddChild(GUI.but)
+    GUI.HeaderCommand = GUI:Create("EditBox")
+    GUI.HeaderCommand:SetLabel("Commande")
+    GUI.HeaderCommand:SetRelativeWidth(0.8)
+
+    GUI.HeaderDelay = GUI:Create("EditBox")
+    GUI.HeaderDelay:SetLabel("Délai")
+    GUI.HeaderDelay:SetRelativeWidth(0.19)
+
+    GUI.HeaderButton = GUI:Create("Button")
+    GUI.HeaderButton:SetFullWidth(true)
+    GUI.HeaderButton:SetCallback("OnClick", function()
+        local dop = Doppler:CreateDop(GUI.HeaderCommand:GetText(),GUI.HeaderDelay:GetText())
+        Doppler:AddDop(dop)
+    end)
+
+    GUI.Header:AddChild(GUI.HeaderCommand)
+    GUI.Header:AddChild(GUI.HeaderDelay)
+    GUI.Header:AddChild(GUI.HeaderButton)
+
+    GUI.ScrollContainer = GUI:Create("InlineGroup")
+    GUI.ScrollContainer:SetFullWidth(true)
+    GUI.ScrollContainer:SetFullHeight(true)
+    GUI.ScrollContainer:SetLayout("Fill")
+
+    GUI.Scroll = GUI:Create("ScrollFrame")
+    GUI.Scroll:SetFullHeight(true)
+    GUI.Scroll:SetFullWidth(true)
+    GUI.Scroll:SetLayout("List")
+    GUI.ScrollContainer:AddChild(GUI.Scroll)
+
+    GUI.mainFrame:AddChild(GUI.Header)
+    GUI.mainFrame:AddChild(GUI.ScrollContainer)
 
 end

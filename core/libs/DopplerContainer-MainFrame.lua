@@ -188,7 +188,7 @@ local function Constructor()
 	frame:SetFrameStrata("FULLSCREEN_DIALOG")
 	frame:SetBackdrop(FrameBackdrop)
 	frame:SetBackdropColor(0, 0, 0, 1)
-	frame:SetMinResize(400, 200)
+	frame:SetMinResize(200, 300)
 	frame:SetToplevel(true)
 	frame:SetScript("OnShow", Frame_OnShow)
 	frame:SetScript("OnHide", Frame_OnClose)
@@ -197,9 +197,10 @@ local function Constructor()
 	local closebutton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 	closebutton:SetScript("OnClick", Button_OnClick)
 	closebutton:SetPoint("BOTTOMRIGHT", -27, 17)
-	closebutton:SetHeight(20)
+	closebutton:SetHeight(10)
 	closebutton:SetWidth(100)
 	closebutton:SetText(CLOSE)
+	closebutton:Hide() -- PROSPER'S EDIT
 
 	local statusbg = CreateFrame("Button", nil, frame)
 	statusbg:SetPoint("BOTTOMLEFT", 15, 15)
@@ -210,6 +211,7 @@ local function Constructor()
 	statusbg:SetBackdropBorderColor(0.4,0.4,0.4)
 	statusbg:SetScript("OnEnter", StatusBar_OnEnter)
 	statusbg:SetScript("OnLeave", StatusBar_OnLeave)
+	statusbg:Hide() -- PROSPER'S EDIT
 
 	local statustext = statusbg:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	statustext:SetPoint("TOPLEFT", 7, -2)
@@ -290,8 +292,8 @@ local function Constructor()
 
 	--Container Support
 	local content = CreateFrame("Frame", nil, frame)
-	content:SetPoint("TOPLEFT", 17, -27)
-	content:SetPoint("BOTTOMRIGHT", -17, 40)
+	content:SetPoint("TOPLEFT", 10, -5)
+	content:SetPoint("BOTTOMRIGHT", -10, 20)
 
 	local widget = {
 		localstatus = {},
