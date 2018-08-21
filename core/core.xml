@@ -2,4 +2,5 @@
 ..\FrameXML\UI.xsd">
     <Include file="libs\libs.xml"/>
     <Script file="core.lua"/>
+    <Script file="ping.lua"/>
 </Ui>

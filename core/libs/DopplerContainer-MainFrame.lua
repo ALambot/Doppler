@@ -1,9 +1,12 @@
 --[[-----------------------------------------------------------------------------
 Frame Container
 -------------------------------------------------------------------------------]]
-local Type, Version = "MainFrame", 1
+local Type, Version = "DopplerMainFrame", 1
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
+
+-- Prosper's black magic
+local minimized = false
 
 -- Lua APIs
 local pairs, assert, type = pairs, assert, type
@@ -54,16 +57,19 @@ local function MoverSizer_OnMouseUp(mover)
 end
 
 local function SizerSE_OnMouseDown(frame)
+	if minimized then return end
 	frame:GetParent():StartSizing("BOTTOMRIGHT")
 	AceGUI:ClearFocus()
 end
 
 local function SizerS_OnMouseDown(frame)
+	if minimized then return end
 	frame:GetParent():StartSizing("BOTTOM")
 	AceGUI:ClearFocus()
 end
 
 local function SizerE_OnMouseDown(frame)
+	if minimized then return end
 	frame:GetParent():StartSizing("RIGHT")
 	AceGUI:ClearFocus()
 end
@@ -88,6 +94,7 @@ local methods = {
 		self:ApplyStatus()
 		self:Show()
         self:EnableResize(true)
+		self:Minimize()
 	end,
 
 	["OnRelease"] = function(self)
@@ -158,6 +165,17 @@ local methods = {
 		else
 			frame:SetPoint("CENTER")
 		end
+	end,
+
+	["Minimize"] = function(self)
+		local frame = self.frame
+		local content = self.content
+
+		content:Hide()
+		minimized = true
+		frame:SetHeight("50")
+		frame:SetWidth("200")
+		frame:SetResizable(false)
 	end
 }
 
@@ -188,11 +206,12 @@ local function Constructor()
 	frame:SetFrameStrata("FULLSCREEN_DIALOG")
 	frame:SetBackdrop(FrameBackdrop)
 	frame:SetBackdropColor(0, 0, 0, 1)
-	frame:SetMinResize(200, 300)
+	frame:SetMinResize(200, 200)
 	frame:SetToplevel(true)
 	frame:SetScript("OnShow", Frame_OnShow)
 	frame:SetScript("OnHide", Frame_OnClose)
 	frame:SetScript("OnMouseDown", Frame_OnMouseDown)
+	frame:SetPoint("RIGHT")
 
 	local closebutton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 	closebutton:SetScript("OnClick", Button_OnClick)
@@ -249,6 +268,7 @@ local function Constructor()
 	titlebg_r:SetPoint("LEFT", titlebg, "RIGHT")
 	titlebg_r:SetWidth(30)
 	titlebg_r:SetHeight(40)
+	-- titlebg_r:Hide() -- PROSPER'S EDIT
 
 	local sizer_se = CreateFrame("Frame", nil, frame)
 	sizer_se:SetPoint("BOTTOMRIGHT")
@@ -295,6 +315,28 @@ local function Constructor()
 	content:SetPoint("TOPLEFT", 10, -5)
 	content:SetPoint("BOTTOMRIGHT", -10, 20)
 
+	-- PROSPER'S EDIT
+	local minibutton = CreateFrame("Button", nil, title, "UIPanelButtonTemplate")
+	minibutton:SetScript("OnClick", function(self)
+		if minimized then
+			content:Show()
+			minimized = false
+			frame:SetResizable(true)
+			frame:SetHeight("200")
+		else
+			content:Hide()
+			minimized = true
+			frame:SetHeight("50")
+			frame:SetWidth("200")
+			frame:SetResizable(false)
+		end
+	end)
+	minibutton:SetHeight(20)
+	minibutton:SetWidth(30)
+	minibutton:SetPoint("TOPRIGHT",frame)
+	minibutton:SetText("_")
+	contentFrame = content
+
 	local widget = {
 		localstatus = {},
 		titletext   = titletext,
@@ -310,7 +352,7 @@ local function Constructor()
 	for method, func in pairs(methods) do
 		widget[method] = func
 	end
-	closebutton.obj, statusbg.obj = widget, widget
+	closebutton.obj, statusbg.obj, minibutton.obj = widget, widget, widget
 
 	return AceGUI:RegisterAsContainer(widget)
 end
